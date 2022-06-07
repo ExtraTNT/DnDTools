@@ -5,7 +5,11 @@ module.exports = {
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // somehow get the theme color in here
+      }
+    },
   },
   plugins: [
   ],

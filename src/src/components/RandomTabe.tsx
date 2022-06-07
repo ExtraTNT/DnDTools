@@ -1,12 +1,13 @@
-import React, { ReactElement, useState } from 'react'
-import { memo } from 'react'
+import React, { useState } from 'react'
+import { memo } from 'react' // used later
 import useControlStyles from '../styles/controls'
 import { useTheme } from 'react-jss'
 import StyledButton from './StyledButton'
-import { Box, TextInput, Text, TextArea, Tip, Table, TableHeader, TableRow, TableCell, Tab, TableBody, Card, CardHeader, CardBody, CardFooter } from 'grommet'
-import { Clear, Toast } from 'grommet-icons'
+import { Box, TextInput, Text, TextArea, Tip, Table, TableHeader, TableRow, TableCell, Tab, TableBody, Card, CardHeader, CardBody, CardFooter, Select } from 'grommet'
+import { Clear } from 'grommet-icons'
 import { clsj } from '../utils/joinClasses'
 import Popup from './Popup'
+import { set, get } from '../services/localObjectStorage'
 
 interface RTProps {
     className?: string
@@ -18,22 +19,18 @@ interface Entry {
     chance: number
 }
 
-interface Toast {
-    title: string
-    body: ReactElement
-    onClick: () => void
-}
-
 export const RandomTable = ({className}: RTProps) => {
     const theme = useTheme()
     const classes = useControlStyles(theme)
     let tmp = 0
+    const dbKey = "randomTableEntries"
     const [entries, setEntries] = useState<Entry[]>([])
     const [toAdd, setToAdd] = useState<Entry>({title: "Title", description: "Description", chance: 1})
     const [total, setTotal] = useState(0)
     const [active, setActive] = useState<Entry>()
     const [addActive, setAddActive] = useState(false)
-    const [toast, setToast] = useState<Toast>()
+    const [saveText, setSaveText] = useState<string>('')
+    const [saveActive, setSaveActive] = useState<boolean>(false)
 
     const add = () => {
         if(addActive) {
@@ -46,7 +43,7 @@ export const RandomTable = ({className}: RTProps) => {
         setAddActive(!addActive)
     }
 
-    const rm = (i) => {
+    const rm = (i: number) => {
         let cp = []
         for (const element of entries) {
             if(entries.indexOf(element) !== i) cp.push(element)
@@ -55,12 +52,12 @@ export const RandomTable = ({className}: RTProps) => {
         Update(cp)
     }
 
-    const change = (value, key) => {
+    const change = (value: string | number, key:number | string) => {
         let cp = {...toAdd}
         cp[key] = value
         setToAdd(cp)
     }
-    const Update = (arr) => {
+    const Update = (arr:Entry[]) => {
         let tot = 0
         for (const element of arr){
             tot += element.chance
@@ -78,17 +75,46 @@ export const RandomTable = ({className}: RTProps) => {
             }
         }
     }
-    const cpToClip = (value) => {
+    const cpToClip = (value: any) => {
         navigator.clipboard.writeText(value)
         alert(`Copied ${value} to clipboard`) // TODO: make this a toast
     }
     const save = () => {
         const data = JSON.stringify(entries)
-        
+        cpToClip(data)
+        setSaveActive(true)
+        // wtf?
+        // fuck this shit
+        // todo fuck it and just make it localy... sucks, but fucking bugs are annoying af
     }
+    const writeToLocalStorrage = () => {
+        console.log(saveText, get(dbKey))
+        !get(dbKey) && set(dbKey, [])
+        let err = false
+        let dbElements = get(dbKey)
+        dbElements.forEach(e => {
+            if(e[saveText]) err = true
+        })
+        if (err){
+            alert("you fucked up")
+        } else {
+            dbElements.push({[saveText]: entries})
+            set(dbKey, dbElements)
+            setSaveActive(false)
+            setSaveText('')
+        }
+    }
+
+    // f this
+    // navigator.clipboard.readText should be a function... browser don't think so
     const load = () => {
+        navigator.clipboard.readText().then(
+            (e) => setEntries(JSON.parse(e))
+        )
         
-        alert("Loaded from clipboard") // TODO: make this a toast
+        
+        alert("Loaded from clipboard") 
+        // TODO: make this a toast
     }
     return <Box className={className} direction='column'>
         <Table className={clsj(classes.tableFix)}>
@@ -143,20 +169,24 @@ export const RandomTable = ({className}: RTProps) => {
                 <Text onClick={() => cpToClip(active.description)}>{active.description}</Text>
             </Box>
         }
-        <Popup active={!!toast}>
+        <Popup active={saveActive}>
             <Card className={clsj(classes.alignCenter, classes.justifyCenter)}>
                 <CardHeader pad="small" className={clsj(classes.middle)}>
-                    <h1>{toast.title}</h1>
+                    <h1>Save as</h1>
                     </CardHeader>
                 <CardBody className={clsj(classes.middle)}>
-                    {toast.body}
+                    <Box>
+                        <TextInput value={saveText} onChange={(e) => setSaveText(e.target.value)} placeholder={"name"}/>
+                    </Box>
                 </CardBody>
                 <CardFooter pad="small" className={clsj(classes.middle)}>
-                    <StyledButton text="OK" onClick={toast.onClick}></StyledButton>
+                    <StyledButton text="OK" onClick={writeToLocalStorrage}/>
                 </CardFooter>
             </Card>
         </Popup>
+        {/* same for load */}
     </Box>
 }
-
-export default memo(RandomTable)
+//todo
+//export default memo(RandomTable)
+export default RandomTable
