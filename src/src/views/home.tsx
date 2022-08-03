@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
 import { memo } from 'react'
 import useControlStyles from '../styles/controls'
-import { useTheme } from 'react-jss'
+import { DefaultTheme, useTheme } from 'react-jss'
 import DiceRoller from '../components/DiceRoller'
 import { Box, Grid, Paragraph, Tab, Tabs, Text, TextInput } from 'grommet'
 import config from '../config'
 import { useSetting } from '../contexts/settings'
 import RandomTabe from '../components/RandomTabe'
+import Notes from '../components/Notes'
 
-export const Home = (props) => {
-    const theme = useTheme()
-    const classes = useControlStyles({...props, theme})
+export const Home = () => {
+    const theme:DefaultTheme = useTheme()
+    const classes = useControlStyles(theme)
     
     const [getSettings, , setSettings] = useSetting()
     const [key, setKey] = useState("test")
@@ -46,7 +47,7 @@ export const Home = (props) => {
                 <Tabs gridArea='right'>
                     <Tab title='Dice'><DiceRoller/></Tab>
                     <Tab title='Table'><RandomTabe/></Tab>
-                    <Tab title='Dice3'>Hehe</Tab>
+                    <Tab title='Notes'><Notes/></Tab>
                     <Tab title='Dice4'>Hoho</Tab>
                 </Tabs>
             </Grid>

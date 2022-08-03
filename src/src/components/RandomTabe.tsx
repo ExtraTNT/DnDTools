@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { memo } from 'react' // used later
 import useControlStyles from '../styles/controls'
-import { useTheme } from 'react-jss'
+import { DefaultTheme, useTheme } from 'react-jss'
 import StyledButton from './StyledButton'
 import { Box, TextInput, Text, TextArea, Tip, Table, TableHeader, TableRow, TableCell, Tab, TableBody, Card, CardHeader, CardBody, CardFooter, Select } from 'grommet'
 import { Clear } from 'grommet-icons'
@@ -20,7 +20,7 @@ interface Entry {
 }
 
 export const RandomTable = ({className}: RTProps) => {
-    const theme = useTheme()
+    const theme:DefaultTheme = useTheme()
     const classes = useControlStyles(theme)
     let tmp = 0
     const dbKey = "randomTableEntries"
@@ -31,6 +31,8 @@ export const RandomTable = ({className}: RTProps) => {
     const [addActive, setAddActive] = useState(false)
     const [saveText, setSaveText] = useState<string>('')
     const [saveActive, setSaveActive] = useState<boolean>(false)
+    const [loadActive, setLoadActive] = useState<boolean>(false)
+    const [loadSelected, setLoadSelected] = useState<string>()
 
     const add = () => {
         if(addActive) {
@@ -38,18 +40,18 @@ export const RandomTable = ({className}: RTProps) => {
             if(entries.indexOf(toAdd) !== -1) return
             cp.push(toAdd)
             setEntries(cp)
-            Update(cp)
+            update(cp)
         }
         setAddActive(!addActive)
     }
 
     const rm = (i: number) => {
-        let cp = []
+        let cp: Entry[] = []
         for (const element of entries) {
             if(entries.indexOf(element) !== i) cp.push(element)
         }
         setEntries(cp)
-        Update(cp)
+        update(cp)
     }
 
     const change = (value: string | number, key:number | string) => {
@@ -57,7 +59,7 @@ export const RandomTable = ({className}: RTProps) => {
         cp[key] = value
         setToAdd(cp)
     }
-    const Update = (arr:Entry[]) => {
+    const update = (arr:Entry[]) => {
         let tot = 0
         for (const element of arr){
             tot += element.chance
@@ -80,12 +82,9 @@ export const RandomTable = ({className}: RTProps) => {
         alert(`Copied ${value} to clipboard`) // TODO: make this a toast
     }
     const save = () => {
-        const data = JSON.stringify(entries)
-        cpToClip(data)
+        //const data = JSON.stringify(entries)
+        //cpToClip(data)
         setSaveActive(true)
-        // wtf?
-        // fuck this shit
-        // todo fuck it and just make it localy... sucks, but fucking bugs are annoying af
     }
     const writeToLocalStorrage = () => {
         console.log(saveText, get(dbKey))
@@ -104,17 +103,36 @@ export const RandomTable = ({className}: RTProps) => {
             setSaveText('')
         }
     }
+    const readFromLocalStorage = () => {
+        return get(dbKey)
+    }
+    const loadKeysFromLocalStorage = () => {
+        try {
+            const arr = readFromLocalStorage()
+            let keys:string[] = []
+            arr.forEach(i => keys.push(Object.keys(i)[0]))
+            return keys
+        } catch(e){
+            return []
+        }
+    }
+    
+    const setLoaded = () => {
+        if(loadSelected == null){
+            return
+        }
+        readFromLocalStorage().forEach(i => {
+            if (Object.keys(i)[0] == loadSelected)
+            {
+                console.log(i)
+                setEntries(i[loadSelected])
+            }
+        })
+        setLoadActive(false)
+    }
 
-    // f this
-    // navigator.clipboard.readText should be a function... browser don't think so
     const load = () => {
-        navigator.clipboard.readText().then(
-            (e) => setEntries(JSON.parse(e))
-        )
-        
-        
-        alert("Loaded from clipboard") 
-        // TODO: make this a toast
+        setLoadActive(true)
     }
     return <Box className={className} direction='column'>
         <Table className={clsj(classes.tableFix)}>
@@ -159,7 +177,7 @@ export const RandomTable = ({className}: RTProps) => {
         <Box pad='xsmall' direction='row' justify='evenly' wrap>
             <StyledButton onClick={() => add()} text={"Add"}/>
             <StyledButton onClick={() => roll()} text={"Roll"}/>
-            <StyledButton onClick={() => setActive(null)} text={"Clear"}/>
+            <StyledButton onClick={() => setActive(undefined)} text={"Clear"}/>
             <StyledButton onClick={() => save()} text={"Save"}/>
             <StyledButton onClick={() => load()} text={"Load"}/>
         </Box>
@@ -173,7 +191,7 @@ export const RandomTable = ({className}: RTProps) => {
             <Card className={clsj(classes.alignCenter, classes.justifyCenter)}>
                 <CardHeader pad="small" className={clsj(classes.middle)}>
                     <h1>Save as</h1>
-                    </CardHeader>
+                </CardHeader>
                 <CardBody className={clsj(classes.middle)}>
                     <Box>
                         <TextInput value={saveText} onChange={(e) => setSaveText(e.target.value)} placeholder={"name"}/>
@@ -181,6 +199,22 @@ export const RandomTable = ({className}: RTProps) => {
                 </CardBody>
                 <CardFooter pad="small" className={clsj(classes.middle)}>
                     <StyledButton text="OK" onClick={writeToLocalStorrage}/>
+                </CardFooter>
+            </Card>
+        </Popup>
+        <Popup active={loadActive} >
+            <Card>
+                <CardHeader pad="small" className={classes.middle}>
+                    <h1>Load From Local Storrage</h1>
+                </CardHeader>
+                <CardBody>
+                    <Box>
+                        <Select options={loadKeysFromLocalStorage()} value={loadSelected} onChange={(o) => setLoadSelected(o.target.value)}/>
+                    </Box>
+                </CardBody>
+                <CardFooter pad="small" className={clsj(classes.middle)}>
+                    <StyledButton text="Load" onClick={() => setLoaded()}/>
+                    <StyledButton text="Cancle" onClick={() => setLoadActive(false)}/>
                 </CardFooter>
             </Card>
         </Popup>

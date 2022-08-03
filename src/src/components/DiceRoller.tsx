@@ -1,7 +1,7 @@
 import React from 'react'
 import { memo } from 'react'
 import useControlStyles from '../styles/controls'
-import { useTheme } from 'react-jss'
+import { DefaultTheme, useTheme } from 'react-jss'
 import StyledButton from './StyledButton'
 import { Box, TextInput, Text } from 'grommet'
 import { useSetting } from '../contexts/settings'
@@ -11,7 +11,7 @@ interface DiceProps {
 }
 
 export const DiceRoller = ({className}: DiceProps) => {
-    const [dice, setDice] = React.useState([[1,20,0]])
+    const [dice, setDice] = React.useState([[1,20,0,1]])
     const [numb, setNumb] = React.useState(0)
     const [getSettings, , setSettings] = useSetting()
     const storeKey = "lastRolledResult"
@@ -20,11 +20,13 @@ export const DiceRoller = ({className}: DiceProps) => {
         // reduceing array accesses with a total value
         let total:number = 0
         dice.forEach(n => {
+            let diceRolls: number = 0;
             for (let i = 0; i < n[0]; i++) {
-                total = ((Math.random() * n[1]) + 1 + total + n[2])
-                total -= total%1
+                let rand:number = (Math.random() * n[1]) + 1
+                rand -= rand%1
+                diceRolls += rand
             }
-            total += n[2]
+            total += diceRolls + (n[3]? n[2] : -n[2])
         })
         setNumb(total)
         setSettings(total, storeKey)
@@ -41,7 +43,7 @@ export const DiceRoller = ({className}: DiceProps) => {
         setDice(d)
     }
 
-    const theme = useTheme()
+    const theme:DefaultTheme = useTheme()
     const classes = useControlStyles(theme)
 
     return <Box className={className} >
@@ -49,7 +51,7 @@ export const DiceRoller = ({className}: DiceProps) => {
             <TextInput size='small' value={dice[0]} onChange={(e) => change(e.target.value, i, 0)}/>
             <Text margin='small'>D</Text>
             <TextInput size='small' value={dice[1]} onChange={(e) => change(e.target.value, i, 1)}/>
-            <Text margin='small'>+</Text>
+            <Text margin='small' onClick={() => change((dice[3]? 0 : 1),i,3)}>{dice[3]? "+" : "-"}</Text>
             <TextInput size='small' value={dice[2]} onChange={(e) => change(e.target.value, i, 2)}/>
             </Box>)}
             <Box pad='small' direction='row'>

@@ -1,15 +1,15 @@
-import React, { ReactElement } from 'react'
+import React, { Component, ReactElement, SVGProps } from 'react'
 import { memo } from 'react'
 import useControlStyles from '../styles/controls'
 import { useTheme } from 'react-jss'
 import { Button } from 'grommet/components/Button'
 import { clsj } from '../utils/joinClasses'
-import { Icon } from 'grommet-icons'
+import { Icon, IconProps } from 'grommet-icons'
 
 interface ButtonProps {
     fill?: boolean
     text?: string | null
-    icon?: ReactElement | null
+    icon?: ReactElement | ReactElement<any, any> | null | Component<IconProps & SVGProps<SVGSVGElement>, any, any>
     className?: string
     margin?: string
     onClick: () => void
