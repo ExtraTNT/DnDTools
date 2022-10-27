@@ -229,6 +229,9 @@ export const useStyles = createUseStyles((theme: Theme) => ({
     h100: {
         height: "100%"
     },
+    hMaxFit: {
+        maxHeight: "min-content"
+    },
     w100: {
         width: "100%"
     },

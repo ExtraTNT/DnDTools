@@ -69,6 +69,13 @@ export const theme = {
             color: 'accent-1'
         }
     },
+    select:{
+        clear:{
+            text: {
+                color: 'textColor'
+            }
+        }
+    },
     backgroundColor: '#383c4a',
     accentColor: '#5294e2',
     textColor: '#7c818c',

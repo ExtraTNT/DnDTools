@@ -27,7 +27,6 @@ export const Notes = ({className}: NotesProps) => {
 
     const save = () => {
         !get(dbKey) && set(dbKey, {})
-        let err = false
         let items = readFromLocalStorage()
         items[currentTitle] = currentText
         set(dbKey, items)
@@ -53,6 +52,13 @@ export const Notes = ({className}: NotesProps) => {
         setCurrentTitle(loadSelected)
         setLoadActive(false)
     }
+    const del = () => {
+        if(!confirm("are you sure")) return
+        let items = readFromLocalStorage()
+        delete items[currentTitle]
+        set(dbKey, items)
+        clear()
+    }
 
     return <Box className={className} >
         <Box pad='xsmall' direction='column'>
@@ -62,6 +68,7 @@ export const Notes = ({className}: NotesProps) => {
                 <StyledButton onClick={save} text={"Save"}/>
                 <StyledButton onClick={load} text={"Load"}/>
                 <StyledButton onClick={clear} text={"Clear"}/>
+                <StyledButton onClick={del} text={"Delete"}/>
             </Box>
         </Box>
         <Popup active={loadActive} >

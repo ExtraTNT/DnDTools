@@ -48,14 +48,14 @@ export const DiceRoller = ({className}: DiceProps) => {
 
     return <Box className={className} >
         {dice.map((dice, i) => <Box  pad='small' direction='row' key={i}>
-            <TextInput size='small' value={dice[0]} onChange={(e) => change(e.target.value, i, 0)}/>
+            <TextInput size='small' value={dice[0]} onChange={(e) => change(e.target.value, i, 0)} className={classes.input}/>
             <Text margin='small'>D</Text>
-            <TextInput size='small' value={dice[1]} onChange={(e) => change(e.target.value, i, 1)}/>
+            <TextInput size='small' value={dice[1]} onChange={(e) => change(e.target.value, i, 1)} className={classes.input}/>
             <Text margin='small' onClick={() => change((dice[3]? 0 : 1),i,3)}>{dice[3]? "+" : "-"}</Text>
-            <TextInput size='small' value={dice[2]} onChange={(e) => change(e.target.value, i, 2)}/>
+            <TextInput size='small' value={dice[2]} onChange={(e) => change(e.target.value, i, 2)} className={classes.input}/>
             </Box>)}
             <Box pad='small' direction='row'>
-                <TextInput size='small' value={numb}/>
+                <TextInput size='small' value={numb} className={classes.input}/>
             
                 <StyledButton margin='xxsmall' onClick={add} text='+'/>
                 <StyledButton margin='xxsmall' onClick={rm} text='-'/>

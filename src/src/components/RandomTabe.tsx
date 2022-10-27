@@ -3,7 +3,7 @@ import { memo } from 'react' // used later
 import useControlStyles from '../styles/controls'
 import { DefaultTheme, useTheme } from 'react-jss'
 import StyledButton from './StyledButton'
-import { Box, TextInput, Text, TextArea, Tip, Table, TableHeader, TableRow, TableCell, Tab, TableBody, Card, CardHeader, CardBody, CardFooter, Select } from 'grommet'
+import { Box, TextInput, Text, TextArea, Tip, Table, TableHeader, TableRow, TableCell, TableBody, Card, CardHeader, CardBody, CardFooter, Select } from 'grommet'
 import { Clear } from 'grommet-icons'
 import { clsj } from '../utils/joinClasses'
 import Popup from './Popup'
@@ -33,6 +33,8 @@ export const RandomTable = ({className}: RTProps) => {
     const [saveActive, setSaveActive] = useState<boolean>(false)
     const [loadActive, setLoadActive] = useState<boolean>(false)
     const [loadSelected, setLoadSelected] = useState<string>()
+    const [deleteActive, setDeleteActive] = useState<boolean>(false)
+    const [deleteSelected, setDeleteSelected] = useState<string>()
 
     const add = () => {
         if(addActive) {
@@ -88,52 +90,41 @@ export const RandomTable = ({className}: RTProps) => {
     }
     const writeToLocalStorrage = () => {
         console.log(saveText, get(dbKey))
-        !get(dbKey) && set(dbKey, [])
-        let err = false
+        !get(dbKey) && set(dbKey, {})
         let dbElements = get(dbKey)
-        dbElements.forEach(e => {
-            if(e[saveText]) err = true
-        })
-        if (err){
-            alert("you fucked up")
-        } else {
-            dbElements.push({[saveText]: entries})
-            set(dbKey, dbElements)
-            setSaveActive(false)
-            setSaveText('')
-        }
+        dbElements[saveText] = entries
+        set(dbKey, dbElements)
+        setSaveActive(false)
+        setSaveText('')
     }
     const readFromLocalStorage = () => {
-        return get(dbKey)
+        return get(dbKey) || {}
     }
     const loadKeysFromLocalStorage = () => {
-        try {
-            const arr = readFromLocalStorage()
-            let keys:string[] = []
-            arr.forEach(i => keys.push(Object.keys(i)[0]))
-            return keys
-        } catch(e){
-            return []
-        }
+        return Object.keys(readFromLocalStorage())
     }
-    
     const setLoaded = () => {
         if(loadSelected == null){
             return
         }
-        readFromLocalStorage().forEach(i => {
-            if (Object.keys(i)[0] == loadSelected)
-            {
-                console.log(i)
-                setEntries(i[loadSelected])
-            }
-        })
+        setEntries(readFromLocalStorage()[loadSelected])
         setLoadActive(false)
     }
-
     const load = () => {
         setLoadActive(true)
     }
+    const del = () => {
+        let items = readFromLocalStorage()
+        console.log("before", items, deleteSelected)
+        delete items[deleteSelected]
+        set(dbKey, items)
+        console.log("after", items)
+        setDeleteActive(false)
+    }
+    const clear = () => {
+        setEntries([])
+    }
+
     return <Box className={className} direction='column'>
         <Table className={clsj(classes.tableFix)}>
             <TableHeader>
@@ -177,9 +168,11 @@ export const RandomTable = ({className}: RTProps) => {
         <Box pad='xsmall' direction='row' justify='evenly' wrap>
             <StyledButton onClick={() => add()} text={"Add"}/>
             <StyledButton onClick={() => roll()} text={"Roll"}/>
-            <StyledButton onClick={() => setActive(undefined)} text={"Clear"}/>
+            <StyledButton onClick={() => setActive(undefined)} text={"Clear Active"}/>
             <StyledButton onClick={() => save()} text={"Save"}/>
             <StyledButton onClick={() => load()} text={"Load"}/>
+            <StyledButton onClick={() => setDeleteActive(true)} text={"Delete"}/>
+            <StyledButton onClick={() => clear()} text={"Clear"}/>
         </Box>
         {
             active && <Box pad='xsmall' margin='xxsmall'>
@@ -199,6 +192,22 @@ export const RandomTable = ({className}: RTProps) => {
                 </CardBody>
                 <CardFooter pad="small" className={clsj(classes.middle)}>
                     <StyledButton text="OK" onClick={writeToLocalStorrage}/>
+                </CardFooter>
+            </Card>
+        </Popup>
+        <Popup active={deleteActive} >
+            <Card>
+                <CardHeader pad="small" className={classes.middle}>
+                    <h1>Load From Local Storrage</h1>
+                </CardHeader>
+                <CardBody>
+                    <Box>
+                        <Select options={loadKeysFromLocalStorage()} value={deleteSelected} onChange={(o) => setDeleteSelected(o.target.value)}/>
+                    </Box>
+                </CardBody>
+                <CardFooter pad="small" className={clsj(classes.middle)}>
+                    <StyledButton text="Delete" onClick={() => del()}/>
+                    <StyledButton text="Cancle" onClick={() => setDeleteActive(false)}/>
                 </CardFooter>
             </Card>
         </Popup>
