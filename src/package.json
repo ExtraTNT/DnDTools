@@ -17,6 +17,7 @@
     "autoprefixer": "^10.4.2",
     "parcel": "^2.0.0",
     "postcss": "^8.4.8",
+    "process": "^0.11.10",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-is": "^17.0.2",
@@ -26,7 +27,7 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^4.4.5",
-    "grommet": "https://github.com/grommet/grommet/tarball/stable",
+    "grommet": "^2.25.3",
     "grommet-icons": "^4.5.0",
     "polished": "^4.1.2",
     "react": "^17.0.1",
